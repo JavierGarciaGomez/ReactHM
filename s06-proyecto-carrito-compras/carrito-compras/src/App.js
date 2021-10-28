@@ -1,25 +1,63 @@
-import logo from './logo.svg';
-import './App.css';
+// ..., 42, 45
+import React, { Component, useEffect, useState } from "react";
+import Products from "./components/Products";
+import Title from "./components/Title";
+import Layout from "./components/UI/Layout";
+import Navbar from "./components/UI/Navbar";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+export default class App extends Component {
+  state = {
+    products: [
+      { name: "Tomate", price: 0.5, img: "./productos/tomate.jpg" },
+      { name: "Arbejas", price: 2.0, img: "./productos/arbejas.jpg" },
+      { name: "Lechuga", price: 1.5, img: "./productos/lechuga.jpg" },
+    ],
+
+    shoppingCart: [
+      // { name: "Tomate", price: 0.5, img: "./productos/tomate.jpg", qty: 1 },
+    ],
+
+    isVisibleCar: false,
+  };
+
+  addToCart = (product) => {
+    const { shoppingCart } = this.state;
+    if (shoppingCart.find((element) => element.name === product.name)) {
+      const newShoppingCart = shoppingCart.map((scProduct) =>
+        scProduct.name === product.name
+          ? { ...scProduct, qty: scProduct.qty + 1 }
+          : scProduct
+      );
+
+      return this.setState({ shoppingCart: newShoppingCart });
+    }
+    return this.setState({
+      shoppingCart: this.state.shoppingCart.concat({ ...product, qty: 1 }),
+    });
+  };
+
+  toggleCar = () => {
+    console.log("clicked");
+    this.setState({ isVisibleCar: !this.state.isVisibleCar });
+    console.log("state", this.state);
+  };
+
+  render() {
+    return (
+      <div>
+        <Navbar
+          shoppingCart={this.state.shoppingCart}
+          toggleCar={this.toggleCar}
+          showCar={this.state.isVisibleCar}
+        />
+        <Layout>
+          <Title></Title>
+          <Products
+            products={this.state.products}
+            addToCart={this.addToCart}
+          ></Products>
+        </Layout>
+      </div>
+    );
+  }
 }
-
-export default App;
