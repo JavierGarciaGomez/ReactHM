@@ -37,9 +37,7 @@ export default class App extends Component {
   };
 
   toggleCar = () => {
-    console.log("clicked");
     this.setState({ isVisibleCar: !this.state.isVisibleCar });
-    console.log("state", this.state);
   };
 
   render() {
