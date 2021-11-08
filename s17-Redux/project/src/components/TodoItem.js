@@ -1,6 +1,8 @@
 // 150
 import React from "react";
 import { useDispatch } from "react-redux";
+import { setComplete } from "../helpers/setFunctions";
+
 import { types } from "../types/types";
 
 export const TodoItem = ({ todo }) => {
@@ -9,7 +11,7 @@ export const TodoItem = ({ todo }) => {
   return (
     <li
       style={{ textDecoration: todo.completed ? "line-through" : "none" }}
-      onClick={() => dispatch({ type: types.TOGGLE, payload: todo })}
+      onClick={() => dispatch(setComplete(todo))}
     >
       {todo.title}
     </li>

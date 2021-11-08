@@ -3,6 +3,13 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { combineReducers } from "redux";
 import { TodoItem } from "./components/TodoItem";
+import {
+  setError,
+  setFilter,
+  setFullfilled,
+  setPending,
+} from "./helpers/setFunctions";
+
 import { types } from "./types/types";
 
 // const initialState = {
@@ -10,97 +17,42 @@ import { types } from "./types/types";
 //   filter: "all", // complete ||incomplete
 // };
 
-// 153
-export const todosReducer = (stateEntities = [], action) => {
-  switch (action.type) {
-    case types.TODOADD:
-      return stateEntities.concat({ ...action.payload });
-
-    case types.TOGGLE:
-      const newTodos = stateEntities.map((todo) => {
-        if (todo.id === action.payload.id) {
-          // todo.completed = true;
-          return { ...todo, completed: !todo.completed };
-        } else {
-          return todo;
-        }
-      });
-      return newTodos;
-
-    default:
-      return stateEntities;
+export const fetchThunk = () => async (dispatch) => {
+  console.log("here");
+  // 157
+  dispatch(setPending());
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/todos");
+    const data = await response.json();
+    const todos = data.slice(0, 20);
+    dispatch(setFullfilled(todos));
+    console.log("data", data);
+  } catch (e) {
+    console.log(e);
+    dispatch(setError(e));
   }
 };
-export const filterReducer = (stateFilter = "all", action) => {
-  switch (action.type) {
-    case types.SHOW:
-      return action.payload;
-
-    default:
-      return stateFilter;
-  }
-};
-
-// 153
-// export const reducer = (state = initialState, action) => {
-//   return {
-//     entities: todosReducer(state.entities, action),
-//     filter: filterReducer(state.filter, action),
-//   };
-// };
-
-// 153. Combine reducers
-export const reducer = combineReducers({
-  entities: todosReducer,
-  filter: filterReducer,
-});
-
-// export const reducer = (state = initialState, action) => {
-//   switch (action.type) {
-//     case types.TODOADD:
-//       return {
-//         ...state,
-//         entities: state.entities.concat({ ...action.payload }),
-//       };
-
-//     case types.TOGGLE:
-//       const newTodos = state.entities.map((todo) => {
-//         if (todo.id === action.payload.id) {
-//           // todo.completed = true;
-//           return { ...todo, completed: !todo.completed };
-//         } else {
-//           return todo;
-//         }
-//       });
-//       return {
-//         ...state,
-//         entities: newTodos,
-//       };
-
-//     case types.SHOW:
-//       return {
-//         ...state,
-//         filter: action.payload,
-//       };
-
-//     default:
-//       return state;
-//   }
-// };
 
 const selectTodos = (state) => {
-  const { entities, filter } = state;
+  const {
+    todos: { todos },
+    filter,
+  } = state;
+  console.log("aca", state);
 
   if (filter === "all") {
-    return entities;
+    return todos;
   }
   if (filter === "complete") {
-    return entities.filter((todo) => todo.completed);
+    return todos.filter((todo) => todo.completed);
   }
   if (filter === "incomplete") {
-    return entities.filter((todo) => !todo.completed);
+    return todos.filter((todo) => !todo.completed);
   }
 };
+
+// 156
+const selectStatus = (state) => state.todos.status;
 
 function App({ store }) {
   const [value, setvalue] = useState("");
@@ -108,6 +60,8 @@ function App({ store }) {
   const dispatch = useDispatch();
   // ..., 152
   const todos = useSelector(selectTodos);
+  // 156
+  const status = useSelector(selectStatus);
 
   // 150
   const submit = (e) => {
@@ -121,23 +75,34 @@ function App({ store }) {
     setvalue("");
   };
 
+  console.log("status", status);
+  if (status.loading === types.LOADINGPENDING) {
+    return <div>'Cargando'</div>;
+  }
+
+  if (status.loading === types.LOADINGREJECTED) {
+    return <div>{status.error}</div>;
+  }
+
   return (
     <div>
       <form onSubmit={submit}>
         <input value={value} onChange={(e) => setvalue(e.target.value)} />
       </form>
-      <button onClick={() => dispatch({ type: types.SHOW, payload: "all" })}>
-        Mostrar todos
-      </button>
-      <button
-        onClick={() => dispatch({ type: types.SHOW, payload: "complete" })}
-      >
+      <button onClick={() => dispatch(setFilter("all"))}>Mostrar todos</button>
+      <button onClick={() => dispatch(setFilter("complete"))}>
         Completados
       </button>
-      <button
-        onClick={() => dispatch({ type: types.SHOW, payload: "incomplete" })}
-      >
+      <button onClick={() => dispatch(setFilter("incomplete"))}>
         Incompletos
+      </button>
+      {/* 154 */}
+      <button
+        onClick={() => {
+          dispatch(fetchThunk);
+        }}
+      >
+        Prueba middleware
       </button>
       <ul>
         {todos.map((todo) => {

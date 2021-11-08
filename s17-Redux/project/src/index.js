@@ -2,12 +2,15 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import App, { reducer } from "./App";
+import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import { createStore } from "redux";
+import { applyMiddleware, createStore } from "redux";
 import { Provider } from "react-redux";
+import { asyncMiddleware } from "./middlewares/async";
+import { reducer } from "./reducers/reducers";
 
-const store = createStore(reducer);
+// ..., 154 middleware
+const store = createStore(reducer, applyMiddleware(asyncMiddleware));
 
 ReactDOM.render(
   <React.StrictMode>
